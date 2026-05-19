@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Market-Making Demo</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f172a;
+        --card: #111827;
+        --muted: #94a3b8;
+        --text: #e5e7eb;
+        --accent: #22c55e;
+        --danger: #ef4444;
+        --border: #1f2937;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 45%);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 24px;
+      }
+      .wrap { max-width: 980px; margin: 0 auto; }
+      h1 { margin: 0 0 6px; }
+      p.sub { margin: 0 0 20px; color: var(--muted); }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .card {
+        background: linear-gradient(180deg, #111827 0%, #0b1220 100%);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .card h2 { margin: 0 0 12px; font-size: 1rem; }
+      .row { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; }
+      label { color: var(--muted); }
+      input[type='range'] { width: 220px; }
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+        gap: 10px;
+      }
+      .metric {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+        background: rgba(15, 23, 42, 0.6);
+      }
+      .metric .name { color: var(--muted); font-size: 0.85rem; }
+      .metric .val { margin-top: 4px; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+      .positive { color: var(--accent); }
+      .negative { color: var(--danger); }
+      .buttons { display: flex; gap: 10px; margin-top: 14px; }
+      button {
+        border: 1px solid var(--border);
+        background: #1f2937;
+        color: var(--text);
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:hover { filter: brightness(1.15); }
+      .trade-log { max-height: 180px; overflow: auto; font-size: 0.92rem; }
+      .trade-log ul { list-style: none; padding: 0; margin: 0; }
+      .trade-log li { padding: 6px 0; border-bottom: 1px solid #182335; }
+      @media (max-width: 840px) {
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Market-Making UI Demo</h1>
+      <p class="sub">Tune your quote width and respond to simulated client flow.</p>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Quote Controls</h2>
+          <div class="row">
+            <label for="width">Bid/Ask Width (bps): <strong id="widthVal">10</strong></label>
+            <input id="width" type="range" min="2" max="50" step="1" value="10" />
+          </div>
+
+          <div class="row"><span>Mid Price</span><strong id="mid">100.00</strong></div>
+          <div class="row"><span>Bid</span><strong id="bid">99.95</strong></div>
+          <div class="row"><span>Ask</span><strong id="ask">100.05</strong></div>
+
+          <div class="buttons">
+            <button id="tradeBtn">Simulate Client Trade</button>
+            <button id="resetBtn">Reset</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Desk State</h2>
+          <div class="metrics">
+            <div class="metric"><div class="name">Inventory</div><div id="inventory" class="val">0</div></div>
+            <div class="metric"><div class="name">Realized P&amp;L</div><div id="pnl" class="val">$0.00</div></div>
+            <div class="metric"><div class="name">Score</div><div id="score" class="val">0</div></div>
+            <div class="metric"><div class="name">Trades</div><div id="trades" class="val">0</div></div>
+          </div>
+
+          <h2 style="margin-top: 14px">Recent Client Trades</h2>
+          <div class="trade-log"><ul id="log"></ul></div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const state = {
+        mid: 100,
+        widthBps: 10,
+        inventory: 0,
+        cash: 0,
+        trades: 0,
+        score: 0,
+      };
+
+      const el = {
+        width: document.getElementById('width'),
+        widthVal: document.getElementById('widthVal'),
+        bid: document.getElementById('bid'),
+        ask: document.getElementById('ask'),
+        mid: document.getElementById('mid'),
+        inventory: document.getElementById('inventory'),
+        pnl: document.getElementById('pnl'),
+        trades: document.getElementById('trades'),
+        score: document.getElementById('score'),
+        log: document.getElementById('log'),
+        tradeBtn: document.getElementById('tradeBtn'),
+        resetBtn: document.getElementById('resetBtn'),
+      };
+
+      function getBidAsk() {
+        const halfSpread = state.mid * (state.widthBps / 10000) / 2;
+        return { bid: state.mid - halfSpread, ask: state.mid + halfSpread };
+      }
+
+      function markToMarketPnl() {
+        return state.cash + state.inventory * state.mid;
+      }
+
+      function updateScore() {
+        const pnl = markToMarketPnl();
+        const inventoryPenalty = Math.abs(state.inventory) * 0.25;
+        state.score = Math.round((pnl - inventoryPenalty) * 100) / 100;
+      }
+
+      function render() {
+        const { bid, ask } = getBidAsk();
+        const pnl = markToMarketPnl();
+
+        el.widthVal.textContent = String(state.widthBps);
+        el.mid.textContent = state.mid.toFixed(2);
+        el.bid.textContent = bid.toFixed(2);
+        el.ask.textContent = ask.toFixed(2);
+        el.inventory.textContent = String(state.inventory);
+        el.trades.textContent = String(state.trades);
+        el.pnl.textContent = `$${pnl.toFixed(2)}`;
+        el.score.textContent = state.score.toFixed(2);
+
+        el.pnl.classList.toggle('positive', pnl >= 0);
+        el.pnl.classList.toggle('negative', pnl < 0);
+        el.score.classList.toggle('positive', state.score >= 0);
+        el.score.classList.toggle('negative', state.score < 0);
+      }
+
+      function addLog(message) {
+        const li = document.createElement('li');
+        li.textContent = message;
+        el.log.prepend(li);
+        while (el.log.children.length > 14) el.log.removeChild(el.log.lastChild);
+      }
+
+      function randomWalkMid() {
+        const shock = (Math.random() - 0.5) * 0.6;
+        state.mid = Math.max(50, state.mid + shock);
+      }
+
+      function simulateTrade() {
+        randomWalkMid();
+        const { bid, ask } = getBidAsk();
+        const side = Math.random() < 0.5 ? 'BUY' : 'SELL';
+        const qty = Math.ceil(Math.random() * 5);
+
+        if (side === 'BUY') {
+          state.inventory -= qty;
+          state.cash += ask * qty;
+          addLog(`Client BUY ${qty} @ ${ask.toFixed(2)} (you sold)`);
+        } else {
+          state.inventory += qty;
+          state.cash -= bid * qty;
+          addLog(`Client SELL ${qty} @ ${bid.toFixed(2)} (you bought)`);
+        }
+
+        state.trades += 1;
+        updateScore();
+        render();
+      }
+
+      function resetState() {
+        state.mid = 100;
+        state.widthBps = 10;
+        state.inventory = 0;
+        state.cash = 0;
+        state.trades = 0;
+        state.score = 0;
+        el.width.value = '10';
+        el.log.innerHTML = '';
+        addLog('Simulation reset.');
+        render();
+      }
+
+      el.width.addEventListener('input', (event) => {
+        state.widthBps = Number(event.target.value);
+        updateScore();
+        render();
+      });
+      el.tradeBtn.addEventListener('click', simulateTrade);
+      el.resetBtn.addEventListener('click', resetState);
+
+      resetState();
+    </script>
+  </body>
+</html>
