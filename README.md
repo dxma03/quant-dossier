@@ -20,3 +20,8 @@ pnpm dev
 ## Documentation
 
 See [MASTER_SPEC.md](docs/MASTER_SPEC.md) for comprehensive project documentation.
+
+
+## Demo Pages
+
+- `market-making-demo.html` — TICKET-007 interactive market-making UI demo.

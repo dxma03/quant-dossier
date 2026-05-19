@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Market-Making UI Demo</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --green: #34d399;
+        --red: #f87171;
+        --blue: #60a5fa;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(circle at top, #1e293b, var(--bg));
+        color: var(--text);
+      }
+      .app {
+        width: min(900px, 94vw);
+        background: rgba(17, 24, 39, 0.95);
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 20px 60px rgba(2, 6, 23, 0.45);
+      }
+      h1 { margin: 0 0 8px; font-size: 1.4rem; }
+      .subtitle { color: var(--muted); margin: 0 0 22px; }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .panel {
+        background: #0b1220;
+        border: 1px solid #273449;
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .controls { grid-column: 1 / -1; }
+      label { display: block; font-size: 0.9rem; color: var(--muted); margin-bottom: 8px; }
+      input[type='range'] { width: 100%; }
+      .value-row { display: flex; justify-content: space-between; font-weight: 600; margin-top: 6px; }
+      .quote {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .pill {
+        flex: 1;
+        border-radius: 10px;
+        padding: 10px 12px;
+        text-align: center;
+        font-weight: 700;
+      }
+      .bid { background: rgba(52, 211, 153, 0.18); border: 1px solid rgba(52, 211, 153, 0.45); color: var(--green); }
+      .ask { background: rgba(248, 113, 113, 0.18); border: 1px solid rgba(248, 113, 113, 0.45); color: var(--red); }
+      .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px; }
+      .metric { background: #111b2f; border: 1px solid #2b3a52; border-radius: 10px; padding: 12px; }
+      .metric .k { color: var(--muted); font-size: 0.82rem; }
+      .metric .v { margin-top: 4px; font-size: 1.25rem; font-weight: 700; }
+      .v.positive { color: var(--green); }
+      .v.negative { color: var(--red); }
+      .actions { display: flex; gap: 10px; margin-top: 14px; }
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .primary { background: var(--blue); color: #0b1220; }
+      .ghost { background: transparent; color: var(--text); border: 1px solid #314056; }
+      .tape {
+        max-height: 240px;
+        overflow: auto;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 0.9rem;
+      }
+      .tape li {
+        padding: 8px 10px;
+        border-bottom: 1px solid #1f2a3d;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .buy { color: var(--green); }
+      .sell { color: var(--red); }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <h1>TICKET-007 — Market-making UI</h1>
+      <p class="subtitle">Interactive quoting demo with client flow, inventory, P&L, and score tracking.</p>
+
+      <section class="panel controls">
+        <label for="width">Bid/Ask width (bps)</label>
+        <input id="width" type="range" min="2" max="80" step="1" value="20" />
+        <div class="value-row">
+          <span>Current width</span>
+          <span id="widthValue">20 bps</span>
+        </div>
+        <div class="quote">
+          <div class="pill bid">Bid: <span id="bidPx">99.90</span></div>
+          <div class="pill ask">Ask: <span id="askPx">100.10</span></div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="toggleFlow">Pause client flow</button>
+          <button class="ghost" id="reset">Reset</button>
+        </div>
+        <div class="metrics">
+          <div class="metric"><div class="k">Inventory</div><div id="inventory" class="v">0</div></div>
+          <div class="metric"><div class="k">P&amp;L</div><div id="pnl" class="v">$0.00</div></div>
+          <div class="metric"><div class="k">Score</div><div id="score" class="v">0</div></div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="panel">
+          <h3>Client trade tape</h3>
+          <ul class="tape" id="tape"></ul>
+        </div>
+        <div class="panel">
+          <h3>How score works</h3>
+          <p>Score rewards positive P&amp;L and low inventory risk:</p>
+          <p><code>score = round(P&amp;L * 10 - |inventory| * 2)</code></p>
+          <p>Wider spreads improve margin per trade but can reduce fill quality in real markets.</p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const mid = 100;
+      let widthBps = 20;
+      let inventory = 0;
+      let pnl = 0;
+      let running = true;
+
+      const widthInput = document.getElementById('width');
+      const widthValue = document.getElementById('widthValue');
+      const bidPx = document.getElementById('bidPx');
+      const askPx = document.getElementById('askPx');
+      const inventoryEl = document.getElementById('inventory');
+      const pnlEl = document.getElementById('pnl');
+      const scoreEl = document.getElementById('score');
+      const tape = document.getElementById('tape');
+      const toggle = document.getElementById('toggleFlow');
+      const reset = document.getElementById('reset');
+
+      const formatMoney = (n) => `$${n.toFixed(2)}`;
+      const computeQuotes = () => {
+        const half = (widthBps / 10000) * mid / 2;
+        return { bid: mid - half, ask: mid + half };
+      };
+      const computeScore = () => Math.round(pnl * 10 - Math.abs(inventory) * 2);
+
+      function render() {
+        const { bid, ask } = computeQuotes();
+        widthValue.textContent = `${widthBps} bps`;
+        bidPx.textContent = bid.toFixed(2);
+        askPx.textContent = ask.toFixed(2);
+        inventoryEl.textContent = inventory;
+        pnlEl.textContent = formatMoney(pnl);
+        pnlEl.className = `v ${pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : ''}`;
+        scoreEl.textContent = computeScore();
+      }
+
+      function addTrade(side, qty, px) {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="${side === 'BUY' ? 'buy' : 'sell'}">${side} ${qty}</span><span>@ ${px.toFixed(2)}</span>`;
+        tape.prepend(li);
+        if (tape.children.length > 30) tape.removeChild(tape.lastChild);
+      }
+
+      function simulateTrade() {
+        if (!running) return;
+        const { bid, ask } = computeQuotes();
+        const side = Math.random() > 0.5 ? 'BUY' : 'SELL';
+        const qty = [1, 1, 2, 3][Math.floor(Math.random() * 4)];
+
+        if (side === 'BUY') {
+          inventory -= qty;
+          pnl += ask * qty - mid * qty;
+          addTrade('BUY', qty, ask);
+        } else {
+          inventory += qty;
+          pnl += mid * qty - bid * qty;
+          addTrade('SELL', qty, bid);
+        }
+        render();
+      }
+
+      widthInput.addEventListener('input', (e) => {
+        widthBps = Number(e.target.value);
+        render();
+      });
+
+      toggle.addEventListener('click', () => {
+        running = !running;
+        toggle.textContent = running ? 'Pause client flow' : 'Resume client flow';
+      });
+
+      reset.addEventListener('click', () => {
+        widthBps = 20;
+        inventory = 0;
+        pnl = 0;
+        widthInput.value = widthBps;
+        tape.innerHTML = '';
+        render();
+      });
+
+      setInterval(simulateTrade, 1200);
+      render();
+    </script>
+  </body>
+</html>
