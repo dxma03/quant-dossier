@@ -1,0 +1,33 @@
+---
+title: "Why market makers fear adverse selection"
+slug: "why-market-makers-fear-adverse-selection"
+summary: "How informed flow creates negative expected value for passive liquidity providers."
+tags: ["market microstructure", "liquidity", "risk"]
+publishedAt: "2026-05-19"
+---
+
+## Core intuition
+
+A market maker earns the spread **only when the quote is fairly priced**. If counterparties are better informed, fills become selectively toxic:
+
+- buys arrive right before price moves up,
+- sells arrive right before price moves down.
+
+This is adverse selection: the maker is chosen *because* they are wrong.
+
+## Practical implications
+
+1. Wider spreads around information events.
+2. Smaller size at top-of-book.
+3. Faster quote refresh / cancellation.
+4. Inventory limits that tighten under elevated toxicity.
+
+## A simple decomposition
+
+Expected PnL per fill can be sketched as:
+
+\[
+\mathbb{E}[\text{PnL}] \approx \text{Spread Capture} - \text{Adverse Selection Cost} - \text{Inventory Cost}.
+\]
+
+If the middle term dominates, quoting aggressively is irrational even with high turnover.

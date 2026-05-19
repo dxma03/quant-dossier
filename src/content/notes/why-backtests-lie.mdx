@@ -1,0 +1,27 @@
+---
+title: "Why backtests lie"
+slug: "why-backtests-lie"
+summary: "Most historical simulations overstate edge due to hidden assumptions and data leakage."
+tags: ["backtesting", "evaluation", "research hygiene"]
+publishedAt: "2026-05-19"
+---
+
+## Failure modes
+
+Backtests usually fail from implementation details, not theory:
+
+- **Lookahead bias**: using information unavailable at trade time.
+- **Survivorship bias**: excluding delisted symbols.
+- **Selection overfitting**: searching many ideas, reporting one winner.
+- **Friction underestimation**: optimistic fills, zero slippage, no borrow constraints.
+- **Regime dependence**: edge tied to one market environment.
+
+## Better process
+
+- Time-based train/validate/test splits.
+- Walk-forward evaluation.
+- Realistic transaction-cost and execution model.
+- Deflated performance statistics and multiple-testing controls.
+- Out-of-sample and paper-trading gates before production capital.
+
+A useful rule: if the strategy only works with perfect fills and zero latency, it probably does not work.

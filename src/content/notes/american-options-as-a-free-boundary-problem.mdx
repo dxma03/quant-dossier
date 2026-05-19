@@ -1,0 +1,30 @@
+---
+title: "American options as a free-boundary problem"
+slug: "american-options-as-a-free-boundary-problem"
+summary: "Pricing American exercise rights requires solving for both value and optimal stopping boundary."
+tags: ["options", "PDE", "optimal stopping"]
+publishedAt: "2026-05-19"
+---
+
+For European options, exercise timing is fixed. For American options, the holder can exercise early, creating an optimal stopping problem.
+
+## Variational inequality view
+
+For an American put (under standard assumptions), value \(V(S,t)\) satisfies:
+
+\[
+\max\left(\mathcal{L}V,\ K-S - V\right)=0,
+\]
+
+where \(\mathcal{L}\) is the Black–Scholes operator. The inequality couples two regions:
+
+1. **Continuation region**: hold option, PDE equality active.
+2. **Exercise region**: intrinsic value binds.
+
+The unknown interface between these regions is the **free boundary**.
+
+## Why this matters in practice
+
+- Numerical schemes must track boundary location.
+- Boundary movement drives early-exercise premium.
+- Coarse time-stepping can misprice near expiry and deep ITM states.
