@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daniel Ma | Resume</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121933;
+      --text: #e8ecff;
+      --muted: #aeb8dd;
+      --accent: #7aa2ff;
+      --chip: #1d2750;
+      --border: #2b376d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: linear-gradient(165deg, #0b1020 0%, #121933 100%);
+      color: var(--text);
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+    .header, .card {
+      background: color-mix(in srgb, var(--card) 92%, black);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 8px 28px rgba(0,0,0,.25);
+    }
+    .header h1 { margin: .25rem 0 .2rem; font-size: 2rem; }
+    .meta { color: var(--muted); font-size: .95rem; display: flex; flex-wrap: wrap; gap: .6rem; }
+    .controls { margin-top: .9rem; display: flex; gap: .6rem; flex-wrap: wrap; }
+    button, .btn {
+      border: 1px solid var(--border);
+      background: var(--chip);
+      color: var(--text);
+      border-radius: 999px;
+      padding: .55rem .9rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.active { border-color: var(--accent); color: white; }
+    .btn.primary { background: var(--accent); color: #09102b; border-color: transparent; text-decoration: none; }
+    main { margin-top: 1rem; display: grid; gap: .9rem; }
+    .section-title { margin: .3rem 0 .8rem; font-size: 1.2rem; }
+    .entry { border-top: 1px solid var(--border); padding-top: .7rem; margin-top: .7rem; }
+    .entry:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+    .topline { display: flex; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
+    .role { font-weight: 700; }
+    .org { color: var(--muted); }
+    ul { margin: .45rem 0 0 1rem; }
+    li { margin: .25rem 0; }
+    .chips { display: flex; flex-wrap: wrap; gap: .45rem; }
+    .chip { background: var(--chip); border: 1px solid var(--border); border-radius: 999px; padding: .35rem .6rem; font-size: .9rem; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Daniel Ma</h1>
+      <div class="meta">
+        <span>(401) 626-9936</span>
+        <span>•</span>
+        <span>daniel_ma1@brown.edu</span>
+      </div>
+      <div class="controls">
+        <button class="filter active" data-filter="all">All</button>
+        <button class="filter" data-filter="education">Education</button>
+        <button class="filter" data-filter="experience">Experience</button>
+        <button class="filter" data-filter="projects">Projects</button>
+        <button class="filter" data-filter="skills">Skills</button>
+        <button class="filter" data-filter="interests">Interests</button>
+        <a class="btn primary" href="../public/Daniel_Ma_Resume.pdf" download>Download PDF</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="card section" data-section="education">
+        <h2 class="section-title">Education</h2>
+        <div class="entry">
+          <div class="topline"><span class="role">Brown University</span><span>Providence, RI • Graduating Dec 2025</span></div>
+          <div class="org">B.S. Neuroscience & B.A. Economics</div>
+          <ul>
+            <li>SAT: 1520 (Math 790, R&amp;W 730)</li>
+            <li>Gold Duke of Edinburgh’s Award (selected among 113 Canadian recipients)</li>
+            <li>Coursework: Computational Neural Systems, Econometrics, Game Theory, CS, Statistics, Applied Econometrics</li>
+          </ul>
+        </div>
+        <div class="entry">
+          <div class="topline"><span class="role">Dartmouth College — Tuck Bridge Program</span><span>Hanover, NH • Jan 2024 – Feb 2024</span></div>
+          <ul>
+            <li>Built DCF and Monte Carlo simulation for American Airlines.</li>
+            <li>Coursework: financial modeling, valuation techniques, LBO/M&amp;A modeling, scenario analysis.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card section" data-section="experience">
+        <h2 class="section-title">Experience</h2>
+        <div class="entry">
+          <div class="topline"><span class="role">Moody’s Ratings &amp; Research — Summer Associate, Structured Finance</span><span>New York, NY • Jun 2025 – Sep 2025</span></div>
+          <ul>
+            <li>Engineered Python pipeline for credit-loss and cash-flow modeling on large ABS/MBS pools; reduced runtime 30% and improved forecasting accuracy.</li>
+            <li>Designed relative-value screen ranking 500+ tranches by risk-adjusted spread for trading desk workflows.</li>
+            <li>Enhanced Monte Carlo prepayment model with borrower-behavior features in PyTorch.</li>
+          </ul>
+        </div>
+        <div class="entry">
+          <div class="topline"><span class="role">Deutsche Bank — Summer Analyst, Quant Risk Management</span><span>New York, NY • Jun 2024 – Aug 2024</span></div>
+          <ul>
+            <li>Built proprietary cash-flow forecasting model to support HQLA trading strategy optimization.</li>
+            <li>Reviewed ETF portfolios for objective and risk alignment; presented weekly hedging recommendations.</li>
+          </ul>
+        </div>
+        <div class="entry">
+          <div class="topline"><span class="role">Ma Steel Group — Quantitative Analyst</span><span>Remote • Mar 2025 – May 2025</span></div>
+          <ul>
+            <li>Mapped commodity exposure across 12 raw materials and quantified cash-flow-at-risk with historical + Monte Carlo methods.</li>
+            <li>Built internal Python tooling for settlements ingestion, unit harmonization, and risk dashboard publication.</li>
+            <li>Applied PCA to futures curves to inform hedge design and reduce input-cost volatility.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card section" data-section="projects">
+        <h2 class="section-title">Projects</h2>
+        <div class="chips">
+          <span class="chip">Liquidity-Aware ETF Trading Strategy (2024)</span>
+          <span class="chip">Free Boundary PDE Methods for American Options (2025)</span>
+          <span class="chip">Stochastic Control for Continuous-Time Portfolios (2025)</span>
+          <span class="chip">Adaptive PDE Solvers for Option Pricing (2025)</span>
+          <span class="chip">Fractional PDEs under Lévy Models (2025)</span>
+        </div>
+      </section>
+
+      <section class="card section" data-section="skills">
+        <h2 class="section-title">Skills</h2>
+        <div class="chips">
+          <span class="chip">Python (Pandas, NumPy, SciPy, scikit-learn, TensorFlow, PyTorch)</span>
+          <span class="chip">R</span><span class="chip">MATLAB</span><span class="chip">SQL</span><span class="chip">VBA</span>
+          <span class="chip">Time-Series & Monte Carlo Simulation</span>
+          <span class="chip">PCA / LSTM / Random Forest</span>
+          <span class="chip">Portfolio & Risk Management</span>
+          <span class="chip">Derivatives Pricing</span>
+          <span class="chip">Bloomberg API</span><span class="chip">FactSet</span><span class="chip">CapIQ</span><span class="chip">BlackRock Aladdin</span>
+        </div>
+      </section>
+
+      <section class="card section" data-section="interests">
+        <h2 class="section-title">Interests</h2>
+        <div class="chips">
+          <span class="chip">Marathon Running (50+ miles/week)</span>
+          <span class="chip">Triathlons (2026 Ironman 70.3 Western Massachusetts)</span>
+          <span class="chip">Squash</span><span class="chip">Golf</span><span class="chip">Snowboarding</span><span class="chip">Bagels</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const filters = document.querySelectorAll('.filter');
+    const sections = document.querySelectorAll('.section');
+
+    filters.forEach((button) => {
+      button.addEventListener('click', () => {
+        filters.forEach((b) => b.classList.remove('active'));
+        button.classList.add('active');
+        const filter = button.dataset.filter;
+
+        sections.forEach((section) => {
+          const matches = filter === 'all' || section.dataset.section === filter;
+          section.classList.toggle('hidden', !matches);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
