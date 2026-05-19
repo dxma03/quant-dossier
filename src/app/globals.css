@@ -1,0 +1,19 @@
+:root {
+  --bg: #0b0d12;
+  --fg: #e6e8ed;
+  --surface: #131722;
+  --accent: #7ba2ff;
+}
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+.container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
+.site-header { border-bottom: 1px solid #262c3d; }
+.nav { display: flex; gap: 1rem; max-width: 960px; margin: 0 auto; padding: 1rem; }
+a { color: var(--accent); text-decoration: none; }
+.card { background: var(--surface); border: 1px solid #262c3d; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+code { background: #1b2130; padding: 0.1rem 0.35rem; border-radius: 4px; }
